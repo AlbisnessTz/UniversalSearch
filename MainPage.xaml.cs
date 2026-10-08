@@ -12,6 +12,43 @@ public partial class MainPage : ContentPage
     {
         InitializeComponent();
         _searchService = searchService;
+#if ANDROID
+        RootPathEntry.Placeholder = "Choose an accessible Android folder path";
+#endif
+    }
+
+    private async void OnBrowseFolderClicked(object? sender, EventArgs e)
+    {
+#if WINDOWS
+        try
+        {
+            var picker = new Windows.Storage.Pickers.FolderPicker
+            {
+                SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary
+            };
+            picker.FileTypeFilter.Add("*");
+
+            var nativeWindow = Application.Current?.Windows.FirstOrDefault()?.Handler?.PlatformView
+                as Microsoft.UI.Xaml.Window;
+            if (nativeWindow is null)
+            {
+                await DisplayAlert("Folder picker unavailable", "The desktop window is not ready yet. Try again.", "OK");
+                return;
+            }
+
+            var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(nativeWindow);
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, windowHandle);
+            var folder = await picker.PickSingleFolderAsync();
+            if (folder is not null)
+                RootPathEntry.Text = folder.Path;
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Unable to choose folder", ex.Message, "OK");
+        }
+#else
+        await DisplayAlert("Folder selection", "On Android, folder access is being implemented with Android's document picker and permissions. For now, this button is available on Windows.", "OK");
+#endif
     }
 
     private async void OnSearchClicked(object? sender, EventArgs e)
