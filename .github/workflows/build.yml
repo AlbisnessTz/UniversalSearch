@@ -20,6 +20,6 @@ jobs:
       - name: Install MAUI workload
         run: dotnet workload install maui
       - name: Restore Windows target
-        run: dotnet restore UniversalSearch.csproj --framework net10.0-windows10.0.19041.0
+        run: dotnet restore UniversalSearch.csproj -p:TargetFramework=net10.0-windows10.0.19041.0
       - name: Build Windows target
         run: dotnet build UniversalSearch.csproj --configuration Release --framework net10.0-windows10.0.19041.0 --no-restore
