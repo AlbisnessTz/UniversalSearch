@@ -1,3 +1,4 @@
+using System.Text;
 using UniversalSearch.Models;
 
 namespace UniversalSearch.Services;
@@ -26,13 +27,21 @@ public sealed class LocalSearchService : ISearchService
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var current = pending.Pop();
-                IEnumerable<string> directories;
-                try { directories = Directory.EnumerateDirectories(current); }
+                string[] directories;
+                try { directories = Directory.EnumerateDirectories(current).ToArray(); }
                 catch (Exception ex) when (ex is UnauthorizedAccessException or IOException) { directories = Array.Empty<string>(); }
 
                 foreach (var directory in directories)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+                    try
+                    {
+                        // Do not follow junctions/symlinks: this avoids cycles and unexpected traversal outside the chosen tree.
+                        if ((File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0)
+                            continue;
+                    }
+                    catch (Exception ex) when (ex is UnauthorizedAccessException or IOException) { continue; }
+
                     if (Path.GetFileName(directory).Contains(query, StringComparison.OrdinalIgnoreCase))
                         results.Add(new SearchResult(Path.GetFileName(directory), directory, true, "Folder name", SafeLastWriteUtc(directory)));
                     if (results.Count >= maxResults) break;
@@ -40,8 +49,8 @@ public sealed class LocalSearchService : ISearchService
                 }
                 if (results.Count >= maxResults) break;
 
-                IEnumerable<string> files;
-                try { files = Directory.EnumerateFiles(current); }
+                string[] files;
+                try { files = Directory.EnumerateFiles(current).ToArray(); }
                 catch (Exception ex) when (ex is UnauthorizedAccessException or IOException) { files = Array.Empty<string>(); }
 
                 foreach (var file in files)
