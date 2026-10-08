@@ -6,6 +6,7 @@ namespace UniversalSearch;
 public partial class MainPage : ContentPage
 {
     private readonly ISearchService _searchService;
+    private readonly WindowsApplicationSearchService _applicationSearchService = new();
     private CancellationTokenSource? _searchCancellation;
 
     public MainPage(ISearchService searchService)
@@ -14,6 +15,7 @@ public partial class MainPage : ContentPage
         _searchService = searchService;
 #if ANDROID
         RootPathEntry.Placeholder = "Choose an accessible Android folder path";
+        WindowsAppsOption.IsVisible = false;
 #endif
     }
 
@@ -47,7 +49,7 @@ public partial class MainPage : ContentPage
             await DisplayAlert("Unable to choose folder", ex.Message, "OK");
         }
 #else
-        await DisplayAlert("Folder selection", "On Android, folder access is being implemented with Android's document picker and permissions. For now, this button is available on Windows.", "OK");
+        await DisplayAlert("Folder selection", "Android folder access requires the system document picker. That integration is still being implemented; for now, Windows folder selection is available.", "OK");
 #endif
     }
 
@@ -74,7 +76,18 @@ public partial class MainPage : ContentPage
         ResultsLayout.Clear();
         try
         {
-            var results = await _searchService.SearchAsync(rootPath, query, SearchTextCheckBox.IsChecked, 100, _searchCancellation.Token);
+            var results = (await _searchService.SearchAsync(
+                rootPath, query, SearchTextCheckBox.IsChecked, 100, _searchCancellation.Token)).ToList();
+
+#if WINDOWS
+            if (SearchWindowsAppsCheckBox.IsChecked)
+            {
+                StatusLabel.Text = "Searching files and Windows app shortcuts locally…";
+                var appResults = await _applicationSearchService.SearchAsync(query, 50, _searchCancellation.Token);
+                results.AddRange(appResults);
+            }
+#endif
+
             ShowResults(results);
             StatusLabel.Text = $"Found {results.Count} result(s). Results remain local to this device.";
         }
@@ -98,7 +111,7 @@ public partial class MainPage : ContentPage
         {
             var button = new Button
             {
-                Text = $"{(result.IsDirectory ? "📁" : "📄")}  {result.Name}\n{result.MatchType} · {result.FullPath}",
+                Text = $"{(result.IsDirectory ? "📁" : result.MatchType == "Windows app shortcut" ? "🖥️" : "📄")}  {result.Name}\n{result.MatchType} · {result.FullPath}",
                 HorizontalOptions = LayoutOptions.Fill,
                 BackgroundColor = Color.FromArgb("#141A24"), TextColor = Color.FromArgb("#F3F6FA"),
                 BorderColor = Color.FromArgb("#283243"), BorderWidth = 1, CornerRadius = 10,
