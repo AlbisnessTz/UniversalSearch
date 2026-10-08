@@ -12,6 +12,7 @@
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Search location" FontSize="12" TextColor="{StaticResource SecondaryText}" />
                     <Entry x:Name="RootPathEntry" Placeholder="Enter an accessible folder path" TextColor="{StaticResource PrimaryText}" PlaceholderColor="#687588" BackgroundColor="Transparent" />
+                    <Button Text="Browse for folder" Clicked="OnBrowseFolderClicked" BackgroundColor="#202938" TextColor="{StaticResource PrimaryText}" CornerRadius="10" HeightRequest="42" />
                     <Label Text="Windows example: C:\Users\YourName\Documents" FontSize="11" TextColor="{StaticResource SecondaryText}" />
                 </VerticalStackLayout>
             </Border>
