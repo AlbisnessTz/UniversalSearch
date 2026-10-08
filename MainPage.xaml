@@ -13,6 +13,7 @@
                     <Label Text="Search location" FontSize="12" TextColor="{StaticResource SecondaryText}" />
                     <Entry x:Name="RootPathEntry" Placeholder="Enter an accessible folder path" TextColor="{StaticResource PrimaryText}" PlaceholderColor="#687588" BackgroundColor="Transparent" />
                     <Button Text="Browse for folder" Clicked="OnBrowseFolderClicked" BackgroundColor="#202938" TextColor="{StaticResource PrimaryText}" CornerRadius="10" HeightRequest="42" />
+                    <Label Text="Images and other files are searched by filename in this location." FontSize="11" TextColor="{StaticResource SecondaryText}" />
                     <Label Text="Windows example: C:\Users\YourName\Documents" FontSize="11" TextColor="{StaticResource SecondaryText}" />
                 </VerticalStackLayout>
             </Border>
@@ -26,6 +27,10 @@
             <HorizontalStackLayout x:Name="WindowsAppsOption" Spacing="10" VerticalOptions="Center">
                 <CheckBox x:Name="SearchWindowsAppsCheckBox" Color="{StaticResource AccentColor}" />
                 <Label Text="Also search Windows Start Menu app shortcuts" TextColor="{StaticResource SecondaryText}" FontSize="12" VerticalTextAlignment="Center" />
+            </HorizontalStackLayout>
+            <HorizontalStackLayout x:Name="WindowsSettingsOption" Spacing="10" VerticalOptions="Center">
+                <CheckBox x:Name="SearchWindowsSettingsCheckBox" Color="{StaticResource AccentColor}" />
+                <Label Text="Also search common Windows Settings pages" TextColor="{StaticResource SecondaryText}" FontSize="12" VerticalTextAlignment="Center" />
             </HorizontalStackLayout>
             <Button x:Name="SearchButton" Text="Search this location" Clicked="OnSearchClicked" BackgroundColor="{StaticResource AccentColor}" TextColor="#07120D" FontAttributes="Bold" CornerRadius="12" HeightRequest="50" />
             <Label x:Name="StatusLabel" Text="Enter a folder path and a search term to begin." TextColor="{StaticResource SecondaryText}" FontSize="12" />
