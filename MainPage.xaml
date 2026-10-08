@@ -23,6 +23,10 @@
                 <CheckBox x:Name="SearchTextCheckBox" Color="{StaticResource AccentColor}" />
                 <Label Text="Also search inside small TXT, MD, CSV and LOG files" TextColor="{StaticResource SecondaryText}" FontSize="12" VerticalTextAlignment="Center" />
             </HorizontalStackLayout>
+            <HorizontalStackLayout x:Name="WindowsAppsOption" Spacing="10" VerticalOptions="Center">
+                <CheckBox x:Name="SearchWindowsAppsCheckBox" Color="{StaticResource AccentColor}" />
+                <Label Text="Also search Windows Start Menu app shortcuts" TextColor="{StaticResource SecondaryText}" FontSize="12" VerticalTextAlignment="Center" />
+            </HorizontalStackLayout>
             <Button x:Name="SearchButton" Text="Search this location" Clicked="OnSearchClicked" BackgroundColor="{StaticResource AccentColor}" TextColor="#07120D" FontAttributes="Bold" CornerRadius="12" HeightRequest="50" />
             <Label x:Name="StatusLabel" Text="Enter a folder path and a search term to begin." TextColor="{StaticResource SecondaryText}" FontSize="12" />
             <VerticalStackLayout x:Name="ResultsLayout" Spacing="8" />
