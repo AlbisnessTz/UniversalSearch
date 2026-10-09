@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="UniversalSearch.MainPage" Title="UniversalSearch"
+             BackgroundColor="{StaticResource PageBackground}">
+    <ScrollView>
+        <VerticalStackLayout Padding="22" Spacing="16">
+            <Label Text="UNIVERSALSEARCH" FontSize="13" CharacterSpacing="2.2" TextColor="{StaticResource AccentColor}" FontAttributes="Bold" />
+            <Label Text="Find it. Fast." FontSize="32" FontAttributes="Bold" TextColor="{StaticResource PrimaryText}" />
+            <Label Text="Private local search. No account or internet required." FontSize="14" TextColor="{StaticResource SecondaryText}" />
+            <Border BackgroundColor="{StaticResource PanelBackground}" Stroke="#283243" StrokeShape="RoundRectangle 14" Padding="12">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Search location" FontSize="12" TextColor="{StaticResource SecondaryText}" />
+                    <Entry x:Name="RootPathEntry" Placeholder="Enter an accessible folder path" TextColor="{StaticResource PrimaryText}" PlaceholderColor="#687588" BackgroundColor="Transparent" />
+                    <Button Text="Browse for folder" Clicked="OnBrowseFolderClicked" BackgroundColor="#202938" TextColor="{StaticResource PrimaryText}" CornerRadius="10" HeightRequest="42" />
+                    <Label Text="Images and other files are searched by filename in this location." FontSize="11" TextColor="{StaticResource SecondaryText}" />
+                    <Label Text="Windows example: C:\Users\YourName\Documents" FontSize="11" TextColor="{StaticResource SecondaryText}" />
+                </VerticalStackLayout>
+            </Border>
+            <Border BackgroundColor="{StaticResource PanelBackground}" Stroke="#283243" StrokeShape="RoundRectangle 14" Padding="12">
+                <Entry x:Name="QueryEntry" Placeholder="What are you looking for?" TextColor="{StaticResource PrimaryText}" PlaceholderColor="#687588" BackgroundColor="Transparent" ClearButtonVisibility="WhileEditing" ReturnType="Search" Completed="OnSearchClicked" />
+            </Border>
+            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                <CheckBox x:Name="SearchTextCheckBox" Color="{StaticResource AccentColor}" />
+                <Label Text="Also search inside small TXT, MD, CSV and LOG files" TextColor="{StaticResource SecondaryText}" FontSize="12" VerticalTextAlignment="Center" />
+            </HorizontalStackLayout>
+            <HorizontalStackLayout x:Name="WindowsAppsOption" Spacing="10" VerticalOptions="Center">
+                <CheckBox x:Name="SearchWindowsAppsCheckBox" Color="{StaticResource AccentColor}" />
+                <Label Text="Also search Windows Start Menu app shortcuts" TextColor="{StaticResource SecondaryText}" FontSize="12" VerticalTextAlignment="Center" />
+            </HorizontalStackLayout>
+            <HorizontalStackLayout x:Name="WindowsSettingsOption" Spacing="10" VerticalOptions="Center">
+                <CheckBox x:Name="SearchWindowsSettingsCheckBox" Color="{StaticResource AccentColor}" />
+                <Label Text="Also search common Windows Settings pages" TextColor="{StaticResource SecondaryText}" FontSize="12" VerticalTextAlignment="Center" />
+            </HorizontalStackLayout>
+            <Button x:Name="SearchButton" Text="Search this location" Clicked="OnSearchClicked" BackgroundColor="{StaticResource AccentColor}" TextColor="#07120D" FontAttributes="Bold" CornerRadius="12" HeightRequest="50" />
+            <Label x:Name="StatusLabel" Text="Enter a folder path and a search term to begin." TextColor="{StaticResource SecondaryText}" FontSize="12" />
+            <VerticalStackLayout x:Name="ResultsLayout" Spacing="8" />
+            <Label Text="Early MVP · Searches only locations you enter · Results stay on this device" FontSize="11" TextColor="{StaticResource SecondaryText}" HorizontalTextAlignment="Center" Margin="0,10,0,0" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
