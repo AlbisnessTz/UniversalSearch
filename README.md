@@ -6,7 +6,7 @@ UniversalSearch is being developed as a local-first utility to help people find 
 
 ## Current development status
 
-This is an early MVP foundation, not a release-ready app. The shared .NET MAUI interface and local filesystem search are present. The Windows UI now includes options for searching Start Menu shortcuts and a curated list of common Windows Settings pages. The latest changes still require a successful CI build and runtime testing before they can be considered verified.
+This is an early MVP foundation, not a release-ready app. The shared .NET MAUI interface and local filesystem search are present. The Windows UI now includes options for searching Start Menu shortcuts and a curated list of common Windows Settings pages. A Windows x64 CI build has passed, including restore, compilation, and artifact upload. Runtime behavior, Android compilation, and device testing are still unverified.
 
 ### Current scope and limitations
 
@@ -28,10 +28,10 @@ This is an early MVP foundation, not a release-ready app. The shared .NET MAUI i
 
 ## Next milestones
 
-1. Verify the Windows build in CI and fix any errors reported by the actual build.
-2. Test folder, image filename, app shortcut and Settings results on Windows.
-3. Implement Android document-provider access using Android's supported storage APIs.
-4. Add robust indexing and performance safeguards for large folders.
+1. Keep the Windows x64 CI build green and review build warnings.
+2. Run and test folder, image-filename, app-shortcut and Settings flows on Windows.
+3. Add an Android build check, then implement document-provider access using Android's supported storage APIs.
+4. Add robust indexing and performance safeguards for large folders, with tests for search correctness and cancellation.
 5. Add supported PDF/DOCX text extraction and tests.
 6. Consider image-content search and optional web search as separate, opt-in features.
 
