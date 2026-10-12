@@ -34,3 +34,7 @@ jobs:
           path: bin/Release/net10.0-windows10.0.19041.0/win-x64/
           if-no-files-found: error
           retention-days: 14
+      - name: Restore Android target
+        run: dotnet restore UniversalSearch.csproj -p:TargetFramework=net10.0-android
+      - name: Build Android target
+        run: dotnet build UniversalSearch.csproj --configuration Release --framework net10.0-android --no-restore
