@@ -36,7 +36,7 @@ public partial class MainPage : ContentPage
                 as Microsoft.UI.Xaml.Window;
             if (nativeWindow is null)
             {
-                await DisplayAlert("Folder picker unavailable", "The desktop window is not ready yet. Try again.", "OK");
+                await DisplayAlertAsync("Folder picker unavailable", "The desktop window is not ready yet. Try again.", "OK");
                 return;
             }
 
@@ -48,10 +48,10 @@ public partial class MainPage : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Unable to choose folder", ex.Message, "OK");
+            await DisplayAlertAsync("Unable to choose folder", ex.Message, "OK");
         }
 #else
-        await DisplayAlert("Folder selection", "Android folder access requires integration with the system document picker. That is still pending; the current folder-path search is not yet Android-ready.", "OK");
+        await DisplayAlertAsync("Folder selection", "Android folder access requires integration with the system document picker. That is still pending; the current folder-path search is not yet Android-ready.", "OK");
 #endif
     }
 
@@ -65,13 +65,13 @@ public partial class MainPage : ContentPage
 
         if (string.IsNullOrWhiteSpace(query))
         {
-            await DisplayAlert("Enter a search term", "Type a filename, folder name, app name, setting, or supported text to search for.", "OK");
+            await DisplayAlertAsync("Enter a search term", "Type a filename, folder name, app name, setting, or supported text to search for.", "OK");
             return;
         }
 
         if (!hasFileLocation && !searchApps && !searchSettings)
         {
-            await DisplayAlert("Choose a search source", "Choose an accessible folder, or select Windows app shortcuts or Settings pages.", "OK");
+            await DisplayAlertAsync("Choose a search source", "Choose an accessible folder, or select Windows app shortcuts or Settings pages.", "OK");
             return;
         }
 
@@ -120,7 +120,7 @@ public partial class MainPage : ContentPage
         catch (Exception ex)
         {
             StatusLabel.Text = "Search could not be completed.";
-            await DisplayAlert("Search error", ex.Message, "OK");
+            await DisplayAlertAsync("Search error", ex.Message, "OK");
         }
         finally
         {
@@ -194,12 +194,12 @@ public partial class MainPage : ContentPage
             if (!result.IsDirectory)
                 await Share.Default.RequestAsync(new ShareFileRequest { Title = result.Name, File = new ShareFile(result.FullPath) });
             else
-                await DisplayAlert("Folder result", result.FullPath, "OK");
+                await DisplayAlertAsync("Folder result", result.FullPath, "OK");
 #endif
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Unable to open item", ex.Message, "OK");
+            await DisplayAlertAsync("Unable to open item", ex.Message, "OK");
         }
     }
 }
