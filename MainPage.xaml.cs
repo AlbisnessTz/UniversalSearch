@@ -15,7 +15,7 @@ public partial class MainPage : ContentPage
         InitializeComponent();
         _searchService = searchService;
 #if ANDROID
-        RootPathEntry.Placeholder = "Choose an accessible Android folder path";
+        RootPathEntry.Placeholder = "Choose a folder using Browse";
         WindowsAppsOption.IsVisible = false;
         WindowsSettingsOption.IsVisible = false;
 #endif
@@ -50,8 +50,22 @@ public partial class MainPage : ContentPage
         {
             await DisplayAlertAsync("Unable to choose folder", ex.Message, "OK");
         }
+#elif ANDROID
+        try
+        {
+            var selectedFolder = await MainActivity.PickFolderAsync();
+            if (!string.IsNullOrWhiteSpace(selectedFolder))
+            {
+                RootPathEntry.Text = selectedFolder;
+                StatusLabel.Text = "Folder access granted. Choose a search term.";
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync("Unable to choose folder", ex.Message, "OK");
+        }
 #else
-        await DisplayAlertAsync("Folder selection", "Android folder access requires integration with the system document picker. That is still pending; the current folder-path search is not yet Android-ready.", "OK");
+        await DisplayAlertAsync("Folder selection unavailable", "This platform does not currently support folder selection.", "OK");
 #endif
     }
 
@@ -69,7 +83,13 @@ public partial class MainPage : ContentPage
     {
         var rootPath = RootPathEntry.Text?.Trim() ?? string.Empty;
         var query = QueryEntry.Text?.Trim() ?? string.Empty;
+        #if ANDROID
+        var hasFileLocation = Android.Net.Uri.TryParse(rootPath, out var selectedUri)
+            && selectedUri is not null
+            && selectedUri.Scheme == "content";
+#else
         var hasFileLocation = !string.IsNullOrWhiteSpace(rootPath) && Directory.Exists(rootPath);
+#endif
         var searchApps = SearchWindowsAppsCheckBox.IsChecked;
         var searchSettings = SearchWindowsSettingsCheckBox.IsChecked;
 
@@ -214,11 +234,20 @@ public partial class MainPage : ContentPage
                 FileName = result.FullPath,
                 UseShellExecute = true
             });
-#else
+#elif ANDROID
             if (!result.IsDirectory)
-                await Share.Default.RequestAsync(new ShareFileRequest { Title = result.Name, File = new ShareFile(result.FullPath) });
+            {
+                var uri = Android.Net.Uri.Parse(result.FullPath);
+                var intent = new Android.Content.Intent(Android.Content.Intent.ActionView, uri);
+                intent.AddFlags(Android.Content.ActivityFlags.GrantReadUriPermission);
+                Platform.CurrentActivity?.StartActivity(intent);
+            }
             else
-                await DisplayAlertAsync("Folder result", result.FullPath, "OK");
+            {
+                await DisplayAlertAsync("Folder result", result.Name, "This folder matched your search. Select it again in Browse to search inside it.");
+            }
+#else
+            await DisplayAlertAsync("Opening results", result.FullPath, "OK");
 #endif
         }
         catch (Exception ex)
