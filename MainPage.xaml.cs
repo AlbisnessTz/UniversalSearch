@@ -84,9 +84,7 @@ public partial class MainPage : ContentPage
         var rootPath = RootPathEntry.Text?.Trim() ?? string.Empty;
         var query = QueryEntry.Text?.Trim() ?? string.Empty;
         #if ANDROID
-        var hasFileLocation = Android.Net.Uri.TryParse(rootPath, out var selectedUri)
-            && selectedUri is not null
-            && selectedUri.Scheme == "content";
+        var hasFileLocation = rootPath.StartsWith("content://", StringComparison.OrdinalIgnoreCase);
 #else
         var hasFileLocation = !string.IsNullOrWhiteSpace(rootPath) && Directory.Exists(rootPath);
 #endif
