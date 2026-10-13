@@ -27,52 +27,71 @@ public sealed class LocalSearchService : ISearchService
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var current = pending.Pop();
-                string[] directories;
-                try { directories = Directory.EnumerateDirectories(current).ToArray(); }
-                catch (Exception ex) when (ex is UnauthorizedAccessException or IOException) { directories = Array.Empty<string>(); }
 
-                foreach (var directory in directories)
+                // Enumerate lazily so a directory containing many entries does not have to be
+                // fully materialized in memory before we can honor cancellation/result limits.
+                try
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    try
+                    foreach (var directory in Directory.EnumerateDirectories(current))
                     {
-                        // Do not follow junctions/symlinks: this avoids cycles and unexpected traversal outside the chosen tree.
-                        if ((File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0)
-                            continue;
-                    }
-                    catch (Exception ex) when (ex is UnauthorizedAccessException or IOException) { continue; }
-
-                    if (Path.GetFileName(directory).Contains(query, StringComparison.OrdinalIgnoreCase))
-                        results.Add(new SearchResult(Path.GetFileName(directory), directory, true, "Folder name", SafeLastWriteUtc(directory)));
-                    if (results.Count >= maxResults) break;
-                    pending.Push(directory);
-                }
-                if (results.Count >= maxResults) break;
-
-                string[] files;
-                try { files = Directory.EnumerateFiles(current).ToArray(); }
-                catch (Exception ex) when (ex is UnauthorizedAccessException or IOException) { files = Array.Empty<string>(); }
-
-                foreach (var file in files)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    var name = Path.GetFileName(file);
-                    if (name.Contains(query, StringComparison.OrdinalIgnoreCase))
-                        results.Add(new SearchResult(name, file, false, "File name", SafeLastWriteUtc(file)));
-                    else if (searchTextFiles && TextExtensions.Contains(Path.GetExtension(file)) && SafeLength(file) <= MaxTextFileBytes)
-                    {
+                        cancellationToken.ThrowIfCancellationRequested();
                         try
                         {
-                            using var reader = new StreamReader(file, detectEncodingFromByteOrderMarks: true);
-                            if (reader.ReadToEnd().Contains(query, StringComparison.OrdinalIgnoreCase))
-                                results.Add(new SearchResult(name, file, false, "Text content", SafeLastWriteUtc(file)));
+                            // Do not follow junctions/symlinks: avoid cycles and unexpected traversal outside the chosen tree.
+                            if ((File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0)
+                                continue;
                         }
-                        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or DecoderFallbackException) { }
+                        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException) { continue; }
+
+                        if (Path.GetFileName(directory).Contains(query, StringComparison.OrdinalIgnoreCase))
+                            results.Add(new SearchResult(Path.GetFileName(directory), directory, true, "Folder name", SafeLastWriteUtc(directory)));
+
+                        if (results.Count >= maxResults)
+                            break;
+
+                        pending.Push(directory);
                     }
-                    if (results.Count >= maxResults) break;
+                }
+                catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+                {
+                    // Keep any results already found and continue with other accessible folders.
+                }
+
+                if (results.Count >= maxResults)
+                    break;
+
+                try
+                {
+                    foreach (var file in Directory.EnumerateFiles(current))
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        var name = Path.GetFileName(file);
+                        if (name.Contains(query, StringComparison.OrdinalIgnoreCase))
+                        {
+                            results.Add(new SearchResult(name, file, false, "File name", SafeLastWriteUtc(file)));
+                        }
+                        else if (searchTextFiles && TextExtensions.Contains(Path.GetExtension(file)) && SafeLength(file) <= MaxTextFileBytes)
+                        {
+                            try
+                            {
+                                using var reader = new StreamReader(file, detectEncodingFromByteOrderMarks: true);
+                                if (reader.ReadToEnd().Contains(query, StringComparison.OrdinalIgnoreCase))
+                                    results.Add(new SearchResult(name, file, false, "Text content", SafeLastWriteUtc(file)));
+                            }
+                            catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or DecoderFallbackException) { }
+                        }
+
+                        if (results.Count >= maxResults)
+                            break;
+                    }
+                }
+                catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+                {
+                    // Access can change while searching; skip this folder's remaining files.
                 }
             }
         }, cancellationToken);
+
         return results;
     }
 
