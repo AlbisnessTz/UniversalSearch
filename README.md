@@ -6,32 +6,37 @@ UniversalSearch is being developed as a local-first utility to help people find 
 
 ## Current development status
 
-This is an early MVP foundation, not a release-ready app. The shared .NET MAUI interface and local filesystem search are present. The Windows UI now includes options for searching Start Menu shortcuts and a curated list of common Windows Settings pages. A Windows x64 CI build has passed, including restore, compilation, and artifact upload. Runtime behavior, Android compilation, and device testing are still unverified.
+This is an early MVP foundation, not a release-ready app. The shared .NET MAUI interface and local filesystem search are present. **Windows x64 and Android targets have both passed CI compilation on earlier commits.** Runtime behavior and physical-device testing are not yet verified. The latest workflow also runs a new local-search unit test suite; its result must be checked separately.
 
 ### Current scope and limitations
 
 - File and folder names are searched inside a folder selected by the user.
 - Image files (including JPG/JPEG, PNG, GIF, BMP, WebP, TIFF, HEIC and SVG) are currently found by **filename**, not by image contents or visual similarity.
 - Optional full-text search is limited to small TXT, MD, CSV and LOG files (up to 512 KiB each).
+- Search results are bounded, directory enumeration is incremental, and the UI now has a Cancel button for an active search.
 - Windows app discovery searches Start Menu shortcut files; it is not a complete inventory of every installed app.
 - Windows Settings search covers a curated list of common pages and aliases. It is not an exhaustive search of every Windows setting.
 - Android's system document-picker and persistent folder-access integration is not complete yet. Do not consider Android file search ready until that integration is implemented and tested.
-- PDF and DOCX text extraction, image-content search, indexing/caching and optional web search are planned work, not implemented features.
+- PDF and DOCX text extraction, image-content search, indexing/caching and web search are planned work, not implemented features.
 
 ## Product principles
 
 - **Local-first:** never upload local files for indexing.
-- **Lightweight:** bounded results, asynchronous scans, and cancellation.
+- **Lightweight:** bounded results, asynchronous scans, incremental enumeration, and cancellation.
 - **Privacy:** user-selected locations; no account required.
 - **Cross-platform:** shared C# logic with platform-specific file access.
 - **Honest scope:** Android storage is permission-limited; support will follow Android's scoped-storage rules.
 
+## Verification
+
+The test project in `tests/UniversalSearch.Tests` covers file-name matching, folder-name matching, optional text-content matching, result limits and pre-cancelled searches. Check the latest [GitHub Actions run](https://github.com/AlbisnessTz/UniversalSearch/actions) for the current status. A green CI build does not replace testing the app on a real Windows PC or Android device.
+
 ## Next milestones
 
-1. Keep the Windows x64 CI build green and review build warnings.
+1. Keep Windows x64 and Android CI builds green and review build warnings.
 2. Run and test folder, image-filename, app-shortcut and Settings flows on Windows.
-3. Add an Android build check, then implement document-provider access using Android's supported storage APIs.
-4. Add robust indexing and performance safeguards for large folders, with tests for search correctness and cancellation.
+3. Implement Android document-provider access using Android's supported storage APIs.
+4. Expand automated tests, including inaccessible paths, large directories, and cancellation during a scan.
 5. Add supported PDF/DOCX text extraction and tests.
 6. Consider image-content search and optional web search as separate, opt-in features.
 
@@ -41,7 +46,7 @@ This is an early MVP foundation, not a release-ready app. The shared .NET MAUI i
 - .NET MAUI workload and platform tooling for the platform you want to run.
 - For Windows, a compatible Windows SDK and Visual Studio Build Tools/Visual Studio workload.
 
-Check the environment with dotnet --info and dotnet workload list.
+Check the environment with `dotnet --info` and `dotnet workload list`.
 
 ## Build
 
