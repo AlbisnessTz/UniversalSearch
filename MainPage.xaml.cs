@@ -55,6 +55,16 @@ public partial class MainPage : ContentPage
 #endif
     }
 
+    private void OnCancelSearchClicked(object? sender, EventArgs e)
+    {
+        if (_searchCancellation is { IsCancellationRequested: false })
+        {
+            CancelSearchButton.IsEnabled = false;
+            StatusLabel.Text = "Cancelling search…";
+            _searchCancellation.Cancel();
+        }
+    }
+
     private async void OnSearchClicked(object? sender, EventArgs e)
     {
         var rootPath = RootPathEntry.Text?.Trim() ?? string.Empty;
@@ -80,6 +90,8 @@ public partial class MainPage : ContentPage
         _searchCancellation = new CancellationTokenSource();
         var cancellationToken = _searchCancellation.Token;
         SearchButton.IsEnabled = false;
+        CancelSearchButton.IsEnabled = true;
+        CancelSearchButton.IsVisible = true;
         StatusLabel.Text = "Searching locally…";
         ResultsLayout.Clear();
 
@@ -125,6 +137,8 @@ public partial class MainPage : ContentPage
         finally
         {
             SearchButton.IsEnabled = true;
+            CancelSearchButton.IsVisible = false;
+            CancelSearchButton.IsEnabled = true;
         }
     }
 
@@ -185,6 +199,16 @@ public partial class MainPage : ContentPage
         try
         {
 #if WINDOWS
+            if (result.MatchType == "Windows setting")
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = result.FullPath,
+                    UseShellExecute = true
+                });
+                return;
+            }
+
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
                 FileName = result.FullPath,
