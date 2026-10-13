@@ -1,4 +1,4 @@
-using System.Text;
+#if ANDROID
 using Android.Content;
 using Android.Provider;
 using Android.Database;
@@ -110,3 +110,4 @@ public sealed class AndroidDocumentTreeSearchService : ISearchService
         return results;
     }
 }
+#endif
