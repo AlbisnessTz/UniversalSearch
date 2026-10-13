@@ -12,7 +12,11 @@ public static class MauiProgram
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
+        #if ANDROID
+        builder.Services.AddSingleton<ISearchService, AndroidDocumentTreeSearchService>();
+#else
         builder.Services.AddSingleton<ISearchService, LocalSearchService>();
+#endif
         builder.Services.AddSingleton<MainPage>();
         return builder.Build();
     }
