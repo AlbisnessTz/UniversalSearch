@@ -6,7 +6,7 @@ UniversalSearch is being developed as a local-first utility to help people find 
 
 ## Current development status
 
-This is an early MVP foundation, not a release-ready app. The shared .NET MAUI interface and local filesystem search are present. The latest checked GitHub Actions run passed Windows x64 compilation, Android compilation, and the six existing local-search unit tests. **Compilation and unit tests do not prove the app works correctly on a physical Windows PC or Android phone.** Android folder selection and document-provider search have been implemented, but still require real-device verification.
+This is an early MVP foundation, not a release-ready app. The shared .NET MAUI interface and local filesystem search are present. The last completed GitHub Actions run passed Windows x64 compilation, Android compilation, and the six existing local-search unit tests. Subsequent Android hardening changes are awaiting a fresh CI run. **Compilation and unit tests do not prove the app works correctly on a physical Windows PC or Android phone.** Android folder selection and document-provider search have been implemented, but still require real-device verification.
 
 ### Current scope and limitations
 
