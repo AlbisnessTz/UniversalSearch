@@ -7,6 +7,8 @@ namespace UniversalSearch.Services;
 public sealed class LocalSearchService : ISearchService
 {
     private const long MaxTextFileBytes = 512 * 1024;
+    private const int MaxTextCharactersToScan = 512 * 1024;
+    private const int TextReadBufferSize = 8 * 1024;
     private static readonly HashSet<string> TextExtensions = new(StringComparer.OrdinalIgnoreCase)
         { ".txt", ".md", ".csv", ".log" };
 
@@ -74,8 +76,7 @@ public sealed class LocalSearchService : ISearchService
                         {
                             try
                             {
-                                using var reader = new StreamReader(file, detectEncodingFromByteOrderMarks: true);
-                                if (reader.ReadToEnd().Contains(query, StringComparison.OrdinalIgnoreCase))
+                                if (ContainsQueryInBoundedTextFile(file, query, cancellationToken))
                                     results.Add(new SearchResult(name, file, false, "Text content", SafeLastWriteUtc(file)));
                             }
                             catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or DecoderFallbackException) { }
@@ -93,6 +94,36 @@ public sealed class LocalSearchService : ISearchService
         }, cancellationToken);
 
         return results;
+    }
+
+    private static bool ContainsQueryInBoundedTextFile(string path, string query, CancellationToken cancellationToken)
+    {
+        using var reader = new StreamReader(path, detectEncodingFromByteOrderMarks: true);
+        var buffer = new char[TextReadBufferSize];
+        var overlapLength = Math.Min(query.Length - 1, MaxTextCharactersToScan);
+        var overlap = string.Empty;
+        var charactersScanned = 0;
+
+        // Bound both the read buffer and total characters examined. This also protects against
+        // a file growing after SafeLength checked its size.
+        while (charactersScanned < MaxTextCharactersToScan)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var count = reader.Read(buffer, 0, Math.Min(buffer.Length, MaxTextCharactersToScan - charactersScanned));
+            if (count == 0)
+                break;
+
+            var chunk = overlap + new string(buffer, 0, count);
+            if (chunk.Contains(query, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            charactersScanned += count;
+            overlap = overlapLength == 0
+                ? string.Empty
+                : chunk[^Math.Min(overlapLength, chunk.Length)..];
+        }
+
+        return false;
     }
 
     private static DateTime SafeLastWriteUtc(string path)
