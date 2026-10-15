@@ -54,6 +54,7 @@ public sealed class AndroidDocumentTreeSearchService : ISearchService
             token.ThrowIfCancellationRequested();
             var parentId = pending.Pop();
             var childrenUri = DocumentsContract.BuildChildDocumentsUriUsingTree(treeUri, parentId);
+            if (childrenUri is null) continue;
             ICursor? cursor = null;
             try
             {
@@ -87,7 +88,8 @@ public sealed class AndroidDocumentTreeSearchService : ISearchService
                     catch (ArgumentOutOfRangeException) { modifiedUtc = DateTime.MinValue; }
 
                     var documentUri = DocumentsContract.BuildDocumentUriUsingTree(treeUri, documentId);
-                    var documentUriText = documentUri?.ToString();
+                    if (documentUri is null) continue;
+                    var documentUriText = documentUri.ToString();
                     if (string.IsNullOrWhiteSpace(documentUriText)) continue;
 
                     if (isDirectory)
