@@ -25,13 +25,23 @@ public class MainActivity : MauiAppCompatActivity
     {
         if (_folderPickerCompletion is not null)
             throw new InvalidOperationException("A folder picker is already open.");
-        _folderPickerCompletion = new TaskCompletionSource<string?>();
-        var intent = new Intent(Intent.ActionOpenDocumentTree);
-        intent.AddFlags(ActivityFlags.GrantReadUriPermission |
-                        ActivityFlags.GrantWriteUriPermission |
-                        ActivityFlags.GrantPersistableUriPermission);
-        StartActivityForResult(intent, FolderPickerRequestCode);
-        return _folderPickerCompletion.Task;
+
+        var completion = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _folderPickerCompletion = completion;
+        try
+        {
+            var intent = new Intent(Intent.ActionOpenDocumentTree);
+            intent.AddFlags(ActivityFlags.GrantReadUriPermission |
+                            ActivityFlags.GrantWriteUriPermission |
+                            ActivityFlags.GrantPersistableUriPermission);
+            StartActivityForResult(intent, FolderPickerRequestCode);
+        }
+        catch (Exception ex)
+        {
+            _folderPickerCompletion = null;
+            completion.TrySetException(ex);
+        }
+        return completion.Task;
     }
 
     protected override void OnActivityResult(int requestCode, Result resultCode, Intent? data)
@@ -47,8 +57,12 @@ public class MainActivity : MauiAppCompatActivity
                 completion.TrySetResult(null);
                 return;
             }
+
             var uri = data.Data;
             var grantedFlags = data.Flags & (ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission);
+            if ((grantedFlags & ActivityFlags.GrantReadUriPermission) == 0)
+                throw new UnauthorizedAccessException("Android did not grant read access to the selected folder.");
+
             ContentResolver?.TakePersistableUriPermission(uri, grantedFlags);
             completion.TrySetResult(uri.ToString());
         }
