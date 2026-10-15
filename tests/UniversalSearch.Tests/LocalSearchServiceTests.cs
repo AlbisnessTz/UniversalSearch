@@ -53,6 +53,34 @@ public sealed class LocalSearchServiceTests
     }
 
     [Fact]
+    public async Task FindsTextMatchAcrossReadBufferBoundary()
+    {
+        using var directory = new TemporaryDirectory();
+        var filePath = Path.Combine(directory.Path, "boundary.txt");
+        await File.WriteAllTextAsync(filePath, new string('a', 8 * 1024 - 1) + "Blue lantern");
+
+        var service = new LocalSearchService();
+        var results = await service.SearchAsync(directory.Path, "Blue lantern", searchTextFiles: true);
+
+        var result = Assert.Single(results);
+        Assert.Equal(filePath, result.FullPath);
+        Assert.Equal("Text content", result.MatchType);
+    }
+
+    [Fact]
+    public async Task DoesNotSearchTextFilesLargerThanConfiguredLimit()
+    {
+        using var directory = new TemporaryDirectory();
+        var filePath = Path.Combine(directory.Path, "large.txt");
+        await File.WriteAllTextAsync(filePath, new string('a', 512 * 1024) + " hidden phrase");
+
+        var service = new LocalSearchService();
+        var results = await service.SearchAsync(directory.Path, "hidden phrase", searchTextFiles: true);
+
+        Assert.Empty(results);
+    }
+
+    [Fact]
     public async Task DoesNotSearchTextContentsWhenDisabled()
     {
         using var directory = new TemporaryDirectory();
