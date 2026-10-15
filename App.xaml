@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="UniversalSearch.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <Color x:Key="PageBackground">#0B0E14</Color>
+            <Color x:Key="PanelBackground">#141A24</Color>
+            <Color x:Key="AccentColor">#52D6A0</Color>
+            <Color x:Key="PrimaryText">#F3F6FA</Color>
+            <Color x:Key="SecondaryText">#9BA8B8</Color>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
